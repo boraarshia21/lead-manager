@@ -62,4 +62,42 @@ const getLeads = async (req, res) => {
     }
 };
 
-module.exports = { createLead,getLeads };
+// @desc    Update an existing lead
+// @route   PUT /api/leads/:id
+// @access  Public
+const updateLead = async (req, res) => {
+    try {
+        const lead = await Lead.findByIdAndUpdate(
+            req.params.id,
+            req.body,
+            {
+                new: true,
+                runValidators: true
+            }
+        );
+
+        if (!lead) {
+            return res.status(404).json({
+                message: "Lead not found"
+            });
+        }
+
+        res.status(200).json({
+            message: "Lead updated successfully",
+            lead
+        });
+
+    } catch (error) {
+        if (error.name === "ValidationError" || error.name === "CastError") {
+            return res.status(400).json({
+                message: "Invalid lead ID or lead data"
+            });
+        }
+
+        res.status(500).json({
+            message: "Server error while updating lead"
+        });
+    }
+};
+
+module.exports = { createLead,getLeads,updateLead };
