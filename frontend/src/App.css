@@ -659,3 +659,19 @@ td {
     padding: 20px;
   }
 }
+.edit-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 11px;
+    border: 1px solid #e2defb;
+    border-radius: 7px;
+    background: #f3f1ff;
+    color: #6758d8;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.edit-button:hover {
+    background: #e8e4ff;
+}

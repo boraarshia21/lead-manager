@@ -1,7 +1,7 @@
 
 import { useEffect, useMemo, useState } from "react";
-import { LayoutDashboard, Users, Building2, Settings, Search, Bell, Plus, UserCheck, UserX, Clock3, RefreshCw, Phone, Mail, Sun, Moon } from "lucide-react";
-import { getLeads ,createLead} from "./services/api";
+import { LayoutDashboard, Users, Building2, Settings, Search, Bell, Plus, UserCheck, UserX, Clock3, RefreshCw, Phone, Mail, Sun, Moon, Pencil } from "lucide-react";
+import { getLeads ,createLead,updateLead} from "./services/api";
 import "./App.css";
 
 function App() {
@@ -15,6 +15,7 @@ function App() {
   const [formData, setFormData] = useState({ name: "", email: "", phone: "", company: "", source: "", status: "New" });
   const [formError, setFormError] = useState("");
   const [saving, setSaving] = useState(false);
+  const [editingLead, setEditingLead] = useState(null);
 
 
 const handleInputChange = e => {
@@ -22,33 +23,42 @@ const handleInputChange = e => {
 };
 
 const handleAddLead = async e => {
-  e.preventDefault();
-  setFormError("");
+    e.preventDefault();
+    setFormError("");
 
-  if (!formData.name.trim() || !formData.email.trim() || !formData.phone.trim() || !formData.company.trim() || !formData.source) {
-    setFormError("Please fill in all required fields.");
-    return;
-  }
+    if (!formData.name.trim() || !formData.email.trim() || !formData.phone.trim() || !formData.company.trim() || !formData.source) {
+        setFormError("Please fill in all required fields.");
+        return;
+    }
 
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-    setFormError("Please enter a valid email address.");
-    return;
-  }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+        setFormError("Please enter a valid email address.");
+        return;
+    }
 
-  try {
-    setSaving(true);
-    await createLead(formData);
-    setFormData({ name: "", email: "", phone: "", company: "", source: "", status: "New" });
-    setShowAddModal(false);
-    await fetchLeads();
-  } catch (err) {
-    setFormError(err.message || "Unable to create lead.");
-  } finally {
-    setSaving(false);
-  }
+    try {
+        setSaving(true);
+        if (editingLead) {
+            await updateLead(editingLead._id, formData);
+        } else {
+            await createLead(formData);
+        }
+        setFormData({ name: "", email: "", phone: "", company: "", source: "", status: "New" });
+        setEditingLead(null);
+        setShowAddModal(false);
+        await fetchLeads();
+    } catch (err) {
+        setFormError(err.message || "Unable to save lead.");
+    } finally {
+        setSaving(false);
+    }
 };
-
-
+const handleEditLead = lead => {
+    setEditingLead(lead);
+    setFormData({ name: lead.name, email: lead.email, phone: lead.phone, company: lead.company, source: lead.source, status: lead.status });
+    setFormError("");
+    setShowAddModal(true);
+};
 useEffect(() => {
   localStorage.setItem("leadflow-theme", theme);
 }, [theme]);
@@ -138,7 +148,7 @@ useEffect(() => {
             <h2>Welcome back! 👋</h2>
             <p>Here's what's happening with your leads today.</p>
           </div>
-          <button className="primary-button" onClick={() => { setFormError(""); setShowAddModal(true); }}><Plus size={18} />Add New Lead</button>
+          <button className="primary-button" onClick={() => { setEditingLead(null); setFormData({ name: "", email: "", phone: "", company: "", source: "", status: "New" }); setFormError(""); setShowAddModal(true); }}><Plus size={18} />Add New Lead</button>
         </section>
 
         <section className="stats-grid">
@@ -195,15 +205,15 @@ useEffect(() => {
           <div className="table-wrapper">
             <table>
               <thead>
-                <tr><th>LEAD NAME</th><th>COMPANY</th><th>PHONE</th><th>SOURCE</th><th>STATUS</th></tr>
+                <tr><th>LEAD NAME</th><th>COMPANY</th><th>PHONE</th><th>SOURCE</th><th>STATUS</th><th>ACTIONS</th></tr>
               </thead>
               <tbody>
                 {loading ? (
-                  <tr><td colSpan="5" className="message-cell">Loading leads...</td></tr>
+                  <tr><td colSpan="6" className="message-cell">Loading leads...</td></tr>
                 ) : error ? (
-                  <tr><td colSpan="5" className="message-cell error-message">{error}</td></tr>
+                  <tr><td colSpan="6" className="message-cell error-message">{error}</td></tr>
                 ) : filteredLeads.length === 0 ? (
-                  <tr><td colSpan="5" className="message-cell">No leads found. Try changing your search or filter.</td></tr>
+                  <tr><td colSpan="6" className="message-cell">No leads found. Try changing your search or filter.</td></tr>
                 ) : (
                   filteredLeads.map(lead => (
                     <tr key={lead._id}>
@@ -220,6 +230,11 @@ useEffect(() => {
                         <td>{lead.phone}</td>
                         <td>{lead.source}</td>
                         <td><span className={getStatusClass(lead.status)}>{lead.status}</span></td>
+                        <td>
+                          <button className="edit-button" onClick={() => handleEditLead(lead)}>
+                            <Pencil size={15} /> Edit
+                          </button>
+                        </td>
                       </tr>
                   ))
                 )}
@@ -235,7 +250,7 @@ useEffect(() => {
     <div className="lead-modal" onClick={e => e.stopPropagation()}>
       <div className="modal-header">
         <div>
-          <h2>Add New Lead</h2>
+          <h2>{editingLead ? "Edit Lead" : "Add New Lead"}</h2>
           <p>Enter the details of your new prospect.</p>
         </div>
         <button className="modal-close" type="button" onClick={() => setShowAddModal(false)}>×</button>
@@ -290,7 +305,7 @@ useEffect(() => {
 
         <div className="modal-actions">
           <button type="button" className="cancel-button" onClick={() => setShowAddModal(false)}>Cancel</button>
-          <button type="submit" className="primary-button" disabled={saving}>{saving ? "Saving..." : "Save Lead"}</button>
+          <button type="submit" className="primary-button" disabled={saving}>{saving ? "Saving..." : editingLead ? "Update Lead" : "Save Lead"}</button>
         </div>
       </form>
     </div>
