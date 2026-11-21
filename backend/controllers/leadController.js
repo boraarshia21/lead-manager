@@ -43,4 +43,23 @@ const createLead = async (req, res) => {
     }
 };
 
-module.exports = { createLead };
+// @desc    Get all leads
+// @route   GET /api/leads
+// @access  Public
+const getLeads = async (req, res) => {
+    try {
+        const leads = await Lead.find().sort({ createdAt: -1 });
+
+        res.status(200).json({
+            count: leads.length,
+            leads
+        });
+
+    } catch (error) {
+        res.status(500).json({
+            message: "Server error while fetching leads"
+        });
+    }
+};
+
+module.exports = { createLead,getLeads };
