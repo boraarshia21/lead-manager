@@ -100,4 +100,34 @@ const updateLead = async (req, res) => {
     }
 };
 
-module.exports = { createLead,getLeads,updateLead };
+// @desc    Delete a lead
+// @route   DELETE /api/leads/:id
+// @access  Public
+const deleteLead = async (req, res) => {
+    try {
+        const lead = await Lead.findByIdAndDelete(req.params.id);
+
+        if (!lead) {
+            return res.status(404).json({
+                message: "Lead not found"
+            });
+        }
+
+        res.status(200).json({
+            message: "Lead deleted successfully"
+        });
+
+    } catch (error) {
+        if (error.name === "CastError") {
+            return res.status(400).json({
+                message: "Invalid lead ID"
+            });
+        }
+
+        res.status(500).json({
+            message: "Server error while deleting lead"
+        });
+    }
+};
+
+module.exports = { createLead,getLeads,updateLead,deleteLead };
