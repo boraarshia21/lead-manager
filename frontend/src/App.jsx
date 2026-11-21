@@ -1,7 +1,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { LayoutDashboard, Users, Building2, Settings, Search, Bell, Plus, UserCheck, UserX, Clock3, RefreshCw, Phone, Mail, Sun, Moon } from "lucide-react";
-import { getLeads } from "./services/api";
+import { getLeads ,createLead} from "./services/api";
 import "./App.css";
 
 function App() {
@@ -11,6 +11,43 @@ function App() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [theme, setTheme] = useState(() => localStorage.getItem("leadflow-theme") || "light");
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [formData, setFormData] = useState({ name: "", email: "", phone: "", company: "", source: "", status: "New" });
+  const [formError, setFormError] = useState("");
+  const [saving, setSaving] = useState(false);
+
+
+const handleInputChange = e => {
+  setFormData({ ...formData, [e.target.name]: e.target.value });
+};
+
+const handleAddLead = async e => {
+  e.preventDefault();
+  setFormError("");
+
+  if (!formData.name.trim() || !formData.email.trim() || !formData.phone.trim() || !formData.company.trim() || !formData.source) {
+    setFormError("Please fill in all required fields.");
+    return;
+  }
+
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+    setFormError("Please enter a valid email address.");
+    return;
+  }
+
+  try {
+    setSaving(true);
+    await createLead(formData);
+    setFormData({ name: "", email: "", phone: "", company: "", source: "", status: "New" });
+    setShowAddModal(false);
+    await fetchLeads();
+  } catch (err) {
+    setFormError(err.message || "Unable to create lead.");
+  } finally {
+    setSaving(false);
+  }
+};
+
 
 useEffect(() => {
   localStorage.setItem("leadflow-theme", theme);
@@ -88,12 +125,12 @@ useEffect(() => {
             <h1>Dashboard</h1>
           </div>
           <div className="topbar-right">
-  <button className="theme-toggle" onClick={() => setTheme(theme === "light" ? "dark" : "light")} aria-label="Toggle theme">
-    {theme === "light" ? <Moon size={19} /> : <Sun size={19} />}
-  </button>
-  <button className="icon-button" aria-label="Notifications"><Bell size={19} /></button>
-  <div className="topbar-avatar">A</div>
-</div>
+            <button className="theme-toggle" onClick={() => setTheme(theme === "light" ? "dark" : "light")} aria-label="Toggle theme">
+            {theme === "light" ? <Moon size={19} /> : <Sun size={19} />}
+            </button>
+          <button className="icon-button" aria-label="Notifications"><Bell size={19} /></button>
+          <div className="topbar-avatar">A</div>
+          </div>
         </header>
 
         <section className="welcome-section">
@@ -101,7 +138,7 @@ useEffect(() => {
             <h2>Welcome back! 👋</h2>
             <p>Here's what's happening with your leads today.</p>
           </div>
-          <button className="primary-button" disabled><Plus size={18} />Add New Lead</button>
+          <button className="primary-button" onClick={() => { setFormError(""); setShowAddModal(true); }}><Plus size={18} />Add New Lead</button>
         </section>
 
         <section className="stats-grid">
@@ -180,10 +217,10 @@ useEffect(() => {
                         </div>
                       </td>
                       <td>{lead.company}</td>
-                      <td>{lead.phone}</td>
-                      <td>{lead.source}</td>
-                      <td><span className={getStatusClass(lead.status)}>{lead.status}</span></td>
-                    </tr>
+                        <td>{lead.phone}</td>
+                        <td>{lead.source}</td>
+                        <td><span className={getStatusClass(lead.status)}>{lead.status}</span></td>
+                      </tr>
                   ))
                 )}
               </tbody>
@@ -192,6 +229,74 @@ useEffect(() => {
 
           <div className="table-footer">Showing {filteredLeads.length} of {totalLeads} leads</div>
         </section>
+
+{showAddModal && (
+  <div className="modal-overlay" onClick={() => setShowAddModal(false)}>
+    <div className="lead-modal" onClick={e => e.stopPropagation()}>
+      <div className="modal-header">
+        <div>
+          <h2>Add New Lead</h2>
+          <p>Enter the details of your new prospect.</p>
+        </div>
+        <button className="modal-close" type="button" onClick={() => setShowAddModal(false)}>×</button>
+      </div>
+
+      <form onSubmit={handleAddLead}>
+        <div className="form-grid">
+          <div className="form-group">
+            <label>Full Name *</label>
+            <input name="name" value={formData.name} onChange={handleInputChange} placeholder="Enter full name" required />
+          </div>
+
+          <div className="form-group">
+            <label>Email Address *</label>
+            <input type="email" name="email" value={formData.email} onChange={handleInputChange} placeholder="Enter email address" required />
+          </div>
+
+          <div className="form-group">
+            <label>Phone Number *</label>
+            <input type="tel" name="phone" value={formData.phone} onChange={handleInputChange} placeholder="Enter phone number" required />
+          </div>
+
+          <div className="form-group">
+            <label>Company *</label>
+            <input name="company" value={formData.company} onChange={handleInputChange} placeholder="Enter company name" required />
+          </div>
+
+          <div className="form-group">
+            <label>Lead Source *</label>
+            <select name="source" value={formData.source} onChange={handleInputChange} required>
+              <option value="">Select source</option>
+              <option value="Website">Website</option>
+              <option value="LinkedIn">LinkedIn</option>
+              <option value="Referral">Referral</option>
+              <option value="Cold Call">Cold Call</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+
+          <div className="form-group">
+            <label>Status</label>
+            <select name="status" value={formData.status} onChange={handleInputChange}>
+              <option value="New">New</option>
+              <option value="Contacted">Contacted</option>
+              <option value="Qualified">Qualified</option>
+              <option value="Lost">Lost</option>
+            </select>
+          </div>
+        </div>
+
+        {formError && <p className="form-error">{formError}</p>}
+
+        <div className="modal-actions">
+          <button type="button" className="cancel-button" onClick={() => setShowAddModal(false)}>Cancel</button>
+          <button type="submit" className="primary-button" disabled={saving}>{saving ? "Saving..." : "Save Lead"}</button>
+        </div>
+      </form>
+    </div>
+  </div>
+)}
+
       </main>
     </div>
   );

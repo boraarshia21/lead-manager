@@ -290,8 +290,8 @@ table {
 }
 
 th {
-  background: #fafaff;
-  color: #999bad;
+  background: #8378dd;
+  color: #ffffff;
   font-size: 10px;
   letter-spacing: 0.7px;
   font-weight: 700;
@@ -467,8 +467,8 @@ td {
 }
 
 .dark-theme th {
-  background: #292d3d;
-  color: #aeb2c5;
+  background: #302b50;
+  color: #b6aaff;
 }
 
 .dark-theme td {
@@ -520,4 +520,142 @@ td {
 .dark-theme .topbar-avatar {
   background: #302b50;
   color: #c0b5ff;
+}
+
+
+/* Add Lead Modal */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(20, 22, 35, 0.55);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+  z-index: 1000;
+}
+
+.lead-modal {
+  width: 100%;
+  max-width: 600px;
+  max-height: 90vh;
+  overflow-y: auto;
+  background: white;
+  border-radius: 15px;
+  padding: 28px;
+  box-shadow: 0 15px 50px rgba(0, 0, 0, 0.2);
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 25px;
+}
+
+.modal-header h2 {
+  font-size: 21px;
+  margin-bottom: 7px;
+  color: #20243a;
+}
+
+.modal-header p {
+  color: #9295a8;
+  font-size: 13px;
+}
+
+.modal-close {
+  border: none;
+  background: transparent;
+  font-size: 27px;
+  color: #888;
+  cursor: pointer;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.form-group label {
+  font-size: 12px;
+  font-weight: 650;
+  color: #55596e;
+}
+
+.form-group input, .form-group select {
+  width: 100%;
+  padding: 11px 12px;
+  border: 1px solid #e3e4ec;
+  border-radius: 8px;
+  outline: none;
+  background: white;
+  color: #30334a;
+  font-size: 12px;
+}
+
+.form-group input:focus, .form-group select:focus {
+  border-color: #8173e6;
+  box-shadow: 0 0 0 3px rgba(103, 88, 216, 0.1);
+}
+
+.form-error {
+  color: #d64c5b;
+  font-size: 12px;
+  margin-top: 16px;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 25px;
+}
+
+.cancel-button {
+  border: 1px solid #e3e4ec;
+  background: white;
+  color: #62667b;
+  padding: 11px 17px;
+  border-radius: 8px;
+  font-size: 13px;
+}
+
+.dark-theme .lead-modal {
+  background: #202331;
+}
+
+.dark-theme .modal-header h2,
+.dark-theme .form-group label {
+  color: #f0f0f5;
+}
+
+.dark-theme .form-group input,
+.dark-theme .form-group select {
+  background: #292d3d;
+  border-color: #3a3e50;
+  color: #f0f0f5;
+}
+
+.dark-theme .cancel-button {
+  background: #292d3d;
+  border-color: #3a3e50;
+  color: #e5e6ef;
+}
+
+@media (max-width: 520px) {
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .lead-modal {
+    padding: 20px;
+  }
 }
