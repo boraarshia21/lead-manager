@@ -1,6 +1,6 @@
 
 import { useEffect, useMemo, useState } from "react";
-import { LayoutDashboard, Users, Building2, Settings, Search, Bell, Plus, UserCheck, UserX, Clock3, RefreshCw, Phone, Mail, Sun, Moon, Pencil, Trash2, LogOut, ChevronLeft, ChevronRight } from "lucide-react";
+import { LayoutDashboard, Users, Building2, Search, Plus, UserCheck, UserX, Clock3, RefreshCw, Phone, Mail, Sun, Moon, Pencil, Trash2, LogOut, ChevronLeft, ChevronRight } from "lucide-react";
 import { getLeads, createLead, updateLead, deleteLead, getStoredUser, getToken, logout, setUnauthorizedHandler } from "./services/api";
 import AuthPage from "./AuthPage";
 import "./App.css";
@@ -21,6 +21,7 @@ function App() {
   const [selectedStatus, setSelectedStatus] = useState("All");
   const [sortBy, setSortBy] = useState("newest");
   const [page, setPage] = useState(1);
+  const [activeNav, setActiveNav] = useState("dashboard");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [theme, setTheme] = useState(() => localStorage.getItem("leadflow-theme") || "light");
@@ -117,6 +118,16 @@ useEffect(() => {
     if (user) fetchLeads();
   }, [user]);
 
+  const goToDashboard = () => {
+    setActiveNav("dashboard");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const goToLeads = () => {
+    setActiveNav("leads");
+    document.getElementById("all-leads")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+
   const handleLogout = () => {
     logout();
     setUser(null);
@@ -169,13 +180,12 @@ useEffect(() => {
 
         <div className="sidebar-section">
           <p className="sidebar-heading">WORKSPACE</p>
-          <div className="nav-item active"><LayoutDashboard size={19} /><span>Dashboard</span></div>
-          <div className="nav-item"><Users size={19} /><span>All Leads</span></div>
-        </div>
-
-        <div className="sidebar-section">
-          <p className="sidebar-heading">PREFERENCES</p>
-          <div className="nav-item"><Settings size={19} /><span>Settings</span></div>
+          <button type="button" className={`nav-item ${activeNav === "dashboard" ? "active" : ""}`} onClick={goToDashboard} title="Dashboard">
+            <LayoutDashboard size={19} /><span>Dashboard</span>
+          </button>
+          <button type="button" className={`nav-item ${activeNav === "leads" ? "active" : ""}`} onClick={goToLeads} title="All Leads">
+            <Users size={19} /><span>All Leads</span>
+          </button>
         </div>
 
         <div className="sidebar-bottom">
@@ -198,7 +208,6 @@ useEffect(() => {
             <button className="theme-toggle" onClick={() => setTheme(theme === "light" ? "dark" : "light")} aria-label="Toggle theme">
             {theme === "light" ? <Moon size={19} /> : <Sun size={19} />}
             </button>
-          <button className="icon-button" aria-label="Notifications"><Bell size={19} /></button>
           <div className="topbar-avatar">{initial}</div>
           </div>
         </header>
@@ -239,7 +248,7 @@ useEffect(() => {
           </div>
         </section>
 
-        <section className="leads-section">
+        <section className="leads-section" id="all-leads">
           <div className="section-header">
             <div>
               <h2>All Leads</h2>
