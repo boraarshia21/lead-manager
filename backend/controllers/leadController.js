@@ -1,12 +1,23 @@
 
 const Lead = require("../models/lead");
 
+// Only these fields may be set by the client (owner always comes from the token)
+const EDITABLE_FIELDS = ["name", "email", "phone", "company", "source", "status"];
+
+const pickEditable = body => {
+    const data = {};
+    for (const field of EDITABLE_FIELDS) {
+        if (body[field] !== undefined) data[field] = body[field];
+    }
+    return data;
+};
+
 // @desc    Create a new lead
 // @route   POST /api/leads
-// @access  Public
+// @access  Private
 const createLead = async (req, res) => {
     try {
-        const { name, email, phone, company, source, status } = req.body;
+        const { name, email, phone, company, source } = req.body;
 
         // Check required fields
         if (!name || !email || !phone || !company || !source) {
@@ -15,14 +26,10 @@ const createLead = async (req, res) => {
             });
         }
 
-        // Create a new lead in MongoDB
+        // Create a new lead owned by the logged-in user
         const lead = await Lead.create({
-            name,
-            email,
-            phone,
-            company,
-            source,
-            status
+            ...pickEditable(req.body),
+            owner: req.user._id
         });
 
         res.status(201).json({
@@ -43,12 +50,12 @@ const createLead = async (req, res) => {
     }
 };
 
-// @desc    Get all leads
+// @desc    Get all leads of the logged-in user
 // @route   GET /api/leads
-// @access  Public
+// @access  Private
 const getLeads = async (req, res) => {
     try {
-        const leads = await Lead.find().sort({ createdAt: -1 });
+        const leads = await Lead.find({ owner: req.user._id }).sort({ createdAt: -1 });
 
         res.status(200).json({
             count: leads.length,
@@ -64,12 +71,12 @@ const getLeads = async (req, res) => {
 
 // @desc    Update an existing lead
 // @route   PUT /api/leads/:id
-// @access  Public
+// @access  Private
 const updateLead = async (req, res) => {
     try {
-        const lead = await Lead.findByIdAndUpdate(
-            req.params.id,
-            req.body,
+        const lead = await Lead.findOneAndUpdate(
+            { _id: req.params.id, owner: req.user._id },
+            pickEditable(req.body),
             {
                 new: true,
                 runValidators: true
@@ -88,10 +95,11 @@ const updateLead = async (req, res) => {
         });
 
     } catch (error) {
-        if (error.name === "ValidationError" || error.name === "CastError") {
-            return res.status(400).json({
-                message: "Invalid lead ID or lead data"
-            });
+        if (error.name === "ValidationError") {
+            return res.status(400).json({ message: error.message });
+        }
+        if (error.name === "CastError") {
+            return res.status(400).json({ message: "Invalid lead ID or lead data" });
         }
 
         res.status(500).json({
@@ -102,10 +110,10 @@ const updateLead = async (req, res) => {
 
 // @desc    Delete a lead
 // @route   DELETE /api/leads/:id
-// @access  Public
+// @access  Private
 const deleteLead = async (req, res) => {
     try {
-        const lead = await Lead.findByIdAndDelete(req.params.id);
+        const lead = await Lead.findOneAndDelete({ _id: req.params.id, owner: req.user._id });
 
         if (!lead) {
             return res.status(404).json({
@@ -130,4 +138,4 @@ const deleteLead = async (req, res) => {
     }
 };
 
-module.exports = { createLead,getLeads,updateLead,deleteLead };
+module.exports = { createLead, getLeads, updateLead, deleteLead };

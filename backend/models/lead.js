@@ -3,6 +3,13 @@ const mongoose = require("mongoose");
 
 const leadSchema = new mongoose.Schema(
   {
+    owner: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+      index: true
+    },
+
     name: {
       type: String,
       required: [true, "Name is required"],
@@ -20,7 +27,8 @@ const leadSchema = new mongoose.Schema(
     phone: {
       type: String,
       required: [true, "Phone number is required"],
-      trim: true
+      trim: true,
+      match: [/^(?:\+91[\s-]?)?[6-9]\d{9}$/, "Please enter a valid Indian phone number"]
     },
 
     company: {

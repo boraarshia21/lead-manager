@@ -3,6 +3,10 @@ const express = require("express");
 const router = express.Router();
 
 const { createLead,getLeads,updateLead,deleteLead} = require("../controllers/leadController");
+const { protect } = require("../middleware/auth");
+
+// Every lead route requires a logged-in user
+router.use(protect);
 
 // POST /api/leads
 router.post("/", createLead);

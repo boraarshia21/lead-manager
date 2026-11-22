@@ -1,10 +1,12 @@
 
 import { useEffect, useMemo, useState } from "react";
-import { LayoutDashboard, Users, Building2, Settings, Search, Bell, Plus, UserCheck, UserX, Clock3, RefreshCw, Phone, Mail, Sun, Moon, Pencil, Trash2 } from "lucide-react";
-import { getLeads ,createLead,updateLead,deleteLead} from "./services/api";
+import { LayoutDashboard, Users, Building2, Settings, Search, Bell, Plus, UserCheck, UserX, Clock3, RefreshCw, Phone, Mail, Sun, Moon, Pencil, Trash2, LogOut } from "lucide-react";
+import { getLeads, createLead, updateLead, deleteLead, getStoredUser, getToken, logout, setUnauthorizedHandler } from "./services/api";
+import AuthPage from "./AuthPage";
 import "./App.css";
 
 function App() {
+  const [user, setUser] = useState(() => (getToken() ? getStoredUser() : null));
   const [leads, setLeads] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedStatus, setSelectedStatus] = useState("All");
@@ -94,8 +96,24 @@ useEffect(() => {
   };
 
   useEffect(() => {
-    fetchLeads();
+    setUnauthorizedHandler(() => {
+      setUser(null);
+      setLeads([]);
+    });
   }, []);
+
+  useEffect(() => {
+    if (user) fetchLeads();
+  }, [user]);
+
+  const handleLogout = () => {
+    logout();
+    setUser(null);
+    setLeads([]);
+    setShowAddModal(false);
+    setSearchTerm("");
+    setSelectedStatus("All");
+  };
 
   // Dashboard statistics
   const totalLeads = leads.length;
@@ -117,6 +135,12 @@ useEffect(() => {
 
   const getStatusClass = status => `status-badge status-${(status || "new").toLowerCase()}`;
 
+  if (!user) {
+    return <AuthPage theme={theme} onAuthenticated={setUser} />;
+  }
+
+  const initial = (user.name || "?").charAt(0).toUpperCase();
+
   return (
     <div className={`app-container ${theme}-theme`}>
       <aside className="sidebar">
@@ -137,11 +161,12 @@ useEffect(() => {
         </div>
 
         <div className="sidebar-bottom">
-          <div className="profile-avatar">A</div>
-          <div>
-            <p className="profile-name">Admin User</p>
-            <p className="profile-role">Sales Workspace</p>
+          <div className="profile-avatar">{initial}</div>
+          <div className="profile-info">
+            <p className="profile-name">{user.name}</p>
+            <p className="profile-role">{user.email}</p>
           </div>
+          <button className="logout-button" onClick={handleLogout} aria-label="Log out" title="Log out"><LogOut size={17} /></button>
         </div>
       </aside>
 
@@ -156,13 +181,13 @@ useEffect(() => {
             {theme === "light" ? <Moon size={19} /> : <Sun size={19} />}
             </button>
           <button className="icon-button" aria-label="Notifications"><Bell size={19} /></button>
-          <div className="topbar-avatar">A</div>
+          <div className="topbar-avatar">{initial}</div>
           </div>
         </header>
 
         <section className="welcome-section">
           <div>
-            <h2>Welcome back! 👋</h2>
+            <h2>Welcome back, {user.name.split(" ")[0]}! 👋</h2>
             <p>Here's what's happening with your leads today.</p>
           </div>
           <button className="primary-button" onClick={() => { setEditingLead(null); setFormData({ name: "", email: "", phone: "", company: "", source: "", status: "New" }); setFormError(""); setShowAddModal(true); }}><Plus size={18} />Add New Lead</button>
@@ -307,7 +332,7 @@ useEffect(() => {
               <option value="Website">Website</option>
               <option value="LinkedIn">LinkedIn</option>
               <option value="Referral">Referral</option>
-              <option value="Cold Call">Cold Call</option>
+              <option value="Advertisement">Advertisement</option>
               <option value="Other">Other</option>
             </select>
           </div>
