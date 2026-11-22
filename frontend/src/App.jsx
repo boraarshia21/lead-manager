@@ -31,8 +31,12 @@ const handleAddLead = async e => {
         return;
     }
 
-    if (!/^[^\s@]+@[^\s@]+\.[a-zA-Z]{2,}$/.test(formData.email)) { {
+    if (!/^[^\s@]+@[^\s@]+\.[a-zA-Z]{2,}$/.test(formData.email)) {
         setFormError("Please enter a valid email address.");
+        return;
+    }
+    if (!/^(?:\+91[\s-]?)?[6-9]\d{9}$/.test(formData.phone.trim())) {
+        setFormError("Please enter a valid Indian phone number.");
         return;
     }
 
@@ -248,8 +252,8 @@ useEffect(() => {
                             <button className="edit-button" onClick={() => handleEditLead(lead)}>
                               <Pencil size={15} /> Edit
                             </button>
-                            <button className="delete-button" onClick={() => handleDeleteLead(lead._id)}>
-                              <Trash2 size={17} /> 
+                            <button className="delete-button" onClick={() => handleDeleteLead(lead._id)} aria-label="Delete lead" title="Delete lead">
+                                <Trash2 size={17} />
                             </button>
                           </div>
                         </td>
