@@ -727,15 +727,64 @@ td {
 
 /* Login / Signup page */
 .auth-page {
+  /* Background palette (overridden in dark theme below) */
+  --auth-base: #f8f7ff;
+  --auth-purple: #e9e3ff;
+  --auth-blue: #e3eaff;
+  --auth-dot: rgba(103, 88, 216, 0.07);
+  --auth-blob-1: rgba(167, 150, 255, 0.35);
+  --auth-blob-2: rgba(160, 182, 255, 0.32);
+
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
   min-height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 20px 16px;
-  background: #f7f8fc;
+  background-color: var(--auth-base);
+  background-image:
+    /* very subtle dot grid for texture */
+    radial-gradient(var(--auth-dot) 1px, transparent 1.5px),
+    /* soft colour washes */
+    radial-gradient(ellipse 60% 55% at 15% 10%, var(--auth-purple), transparent 70%),
+    radial-gradient(ellipse 55% 50% at 90% 90%, var(--auth-blue), transparent 70%),
+    radial-gradient(ellipse 45% 40% at 85% 15%, var(--auth-blue), transparent 70%),
+    radial-gradient(ellipse 45% 40% at 10% 90%, var(--auth-purple), transparent 70%);
+  background-size: 22px 22px, 100% 100%, 100% 100%, 100% 100%, 100% 100%;
+}
+
+/* Large blurred shapes framing the card (top-left and bottom-right) */
+.auth-page::before,
+.auth-page::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  border-radius: 50%;
+  filter: blur(70px);
+  pointer-events: none;
+}
+
+.auth-page::before {
+  width: clamp(260px, 42vw, 560px);
+  aspect-ratio: 1;
+  top: clamp(-220px, -14vw, -90px);
+  left: clamp(-220px, -12vw, -80px);
+  background: var(--auth-blob-1);
+}
+
+.auth-page::after {
+  width: clamp(240px, 38vw, 520px);
+  aspect-ratio: 1;
+  bottom: clamp(-220px, -14vw, -90px);
+  right: clamp(-200px, -12vw, -80px);
+  background: var(--auth-blob-2);
 }
 
 .auth-card {
+  position: relative;
+  z-index: 1;
   width: 100%;
   max-width: 400px;
   background: white;
@@ -795,7 +844,25 @@ td {
 }
 
 .auth-page.dark-theme {
-  background: #151722;
+  --auth-base: #151722;
+  --auth-purple: rgba(103, 88, 216, 0.18);
+  --auth-blue: rgba(88, 120, 216, 0.14);
+  --auth-dot: rgba(192, 181, 255, 0.06);
+  --auth-blob-1: rgba(103, 88, 216, 0.28);
+  --auth-blob-2: rgba(88, 120, 216, 0.22);
+}
+
+/* Keep the full LeadFlow logo on the auth card (the sidebar's mobile rule hides .brand text) */
+@media (max-width: 768px) {
+  .auth-card .auth-brand { justify-content: flex-start; }
+  .auth-card .auth-brand span { display: inline; }
+}
+
+@media (max-width: 520px) {
+  .auth-page::before,
+  .auth-page::after {
+    filter: blur(55px);
+  }
 }
 
 .dark-theme .auth-card {
