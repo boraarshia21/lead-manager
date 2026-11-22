@@ -806,3 +806,42 @@ td {
 .dark-theme .auth-card h1 {
   color: #f0f0f5;
 }
+
+/* Pagination */
+.table-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  text-align: left;
+}
+
+.pagination {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 12px;
+}
+
+.pagination button {
+  display: flex;
+  align-items: center;
+  border: 1px solid #e3e4ec;
+  background: white;
+  color: #62667b;
+  border-radius: 7px;
+  padding: 5px 7px;
+  cursor: pointer;
+}
+
+.pagination button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.dark-theme .pagination button {
+  background: #292d3d;
+  border-color: #3a3e50;
+  color: #e5e6ef;
+}

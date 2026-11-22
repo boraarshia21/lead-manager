@@ -1,15 +1,26 @@
 
 import { useEffect, useMemo, useState } from "react";
-import { LayoutDashboard, Users, Building2, Settings, Search, Bell, Plus, UserCheck, UserX, Clock3, RefreshCw, Phone, Mail, Sun, Moon, Pencil, Trash2, LogOut } from "lucide-react";
+import { LayoutDashboard, Users, Building2, Settings, Search, Bell, Plus, UserCheck, UserX, Clock3, RefreshCw, Phone, Mail, Sun, Moon, Pencil, Trash2, LogOut, ChevronLeft, ChevronRight } from "lucide-react";
 import { getLeads, createLead, updateLead, deleteLead, getStoredUser, getToken, logout, setUnauthorizedHandler } from "./services/api";
 import AuthPage from "./AuthPage";
 import "./App.css";
+
+const PAGE_SIZE = 10;
+
+const SORTERS = {
+  newest: (a, b) => new Date(b.createdAt) - new Date(a.createdAt),
+  oldest: (a, b) => new Date(a.createdAt) - new Date(b.createdAt),
+  "name-asc": (a, b) => (a.name || "").localeCompare(b.name || ""),
+  "name-desc": (a, b) => (b.name || "").localeCompare(a.name || "")
+};
 
 function App() {
   const [user, setUser] = useState(() => (getToken() ? getStoredUser() : null));
   const [leads, setLeads] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedStatus, setSelectedStatus] = useState("All");
+  const [sortBy, setSortBy] = useState("newest");
+  const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [theme, setTheme] = useState(() => localStorage.getItem("leadflow-theme") || "light");
@@ -113,6 +124,7 @@ useEffect(() => {
     setShowAddModal(false);
     setSearchTerm("");
     setSelectedStatus("All");
+    setPage(1);
   };
 
   // Dashboard statistics
@@ -132,6 +144,12 @@ useEffect(() => {
       return matchesSearch && matchesStatus;
     });
   }, [leads, searchTerm, selectedStatus]);
+
+  const sortedLeads = useMemo(() => [...filteredLeads].sort(SORTERS[sortBy]), [filteredLeads, sortBy]);
+  const totalPages = Math.max(1, Math.ceil(sortedLeads.length / PAGE_SIZE));
+  const currentPage = Math.min(page, totalPages);
+  const pageStart = (currentPage - 1) * PAGE_SIZE;
+  const pagedLeads = sortedLeads.slice(pageStart, pageStart + PAGE_SIZE);
 
   const getStatusClass = status => `status-badge status-${(status || "new").toLowerCase()}`;
 
@@ -233,14 +251,20 @@ useEffect(() => {
           <div className="table-controls">
             <div className="search-box">
               <Search size={18} />
-              <input type="text" placeholder="Search by name, email or company..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
+              <input type="text" placeholder="Search by name, email or company..." value={searchTerm} onChange={e => { setSearchTerm(e.target.value); setPage(1); }} />
             </div>
-            <select value={selectedStatus} onChange={e => setSelectedStatus(e.target.value)} className="status-filter">
+            <select value={selectedStatus} onChange={e => { setSelectedStatus(e.target.value); setPage(1); }} className="status-filter" aria-label="Filter by status">
               <option value="All">All Statuses</option>
               <option value="New">New</option>
               <option value="Contacted">Contacted</option>
               <option value="Qualified">Qualified</option>
               <option value="Lost">Lost</option>
+            </select>
+            <select value={sortBy} onChange={e => { setSortBy(e.target.value); setPage(1); }} className="status-filter" aria-label="Sort leads">
+              <option value="newest">Newest first</option>
+              <option value="oldest">Oldest first</option>
+              <option value="name-asc">Name (A–Z)</option>
+              <option value="name-desc">Name (Z–A)</option>
             </select>
           </div>
 
@@ -257,7 +281,7 @@ useEffect(() => {
                 ) : filteredLeads.length === 0 ? (
                   <tr><td colSpan="6" className="message-cell">No leads found. Try changing your search or filter.</td></tr>
                 ) : (
-                  filteredLeads.map(lead => (
+                  pagedLeads.map(lead => (
                     <tr key={lead._id}>
                       <td>
                         <div className="lead-person">
@@ -289,7 +313,20 @@ useEffect(() => {
             </table>
           </div>
 
-          <div className="table-footer">Showing {filteredLeads.length} of {totalLeads} leads</div>
+          <div className="table-footer">
+            <span>
+              {sortedLeads.length === 0
+                ? `Showing 0 of ${totalLeads} leads`
+                : `Showing ${pageStart + 1}–${pageStart + pagedLeads.length} of ${sortedLeads.length} leads${sortedLeads.length !== totalLeads ? ` (filtered from ${totalLeads})` : ""}`}
+            </span>
+            {totalPages > 1 && (
+              <div className="pagination">
+                <button onClick={() => setPage(currentPage - 1)} disabled={currentPage === 1} aria-label="Previous page"><ChevronLeft size={16} /></button>
+                <span>Page {currentPage} of {totalPages}</span>
+                <button onClick={() => setPage(currentPage + 1)} disabled={currentPage === totalPages} aria-label="Next page"><ChevronRight size={16} /></button>
+              </div>
+            )}
+          </div>
         </section>
 
 {showAddModal && (
