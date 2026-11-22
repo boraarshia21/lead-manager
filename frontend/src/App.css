@@ -675,3 +675,22 @@ td {
 .edit-button:hover {
     background: #e8e4ff;
 }
+
+.action-buttons {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.delete-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 11px;
+    border: 1px solid #f5d5d8;
+    border-radius: 7px;
+    background: #fff1f2;
+    color: #d64c5b;
+    font-size: 12px;
+    font-weight: 600;
+}

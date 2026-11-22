@@ -1,7 +1,7 @@
 
 import { useEffect, useMemo, useState } from "react";
-import { LayoutDashboard, Users, Building2, Settings, Search, Bell, Plus, UserCheck, UserX, Clock3, RefreshCw, Phone, Mail, Sun, Moon, Pencil } from "lucide-react";
-import { getLeads ,createLead,updateLead} from "./services/api";
+import { LayoutDashboard, Users, Building2, Settings, Search, Bell, Plus, UserCheck, UserX, Clock3, RefreshCw, Phone, Mail, Sun, Moon, Pencil, Trash2 } from "lucide-react";
+import { getLeads ,createLead,updateLead,deleteLead} from "./services/api";
 import "./App.css";
 
 function App() {
@@ -31,7 +31,7 @@ const handleAddLead = async e => {
         return;
     }
 
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+    if (!/^[^\s@]+@[^\s@]+\.[a-zA-Z]{2,}$/.test(formData.email)) { {
         setFormError("Please enter a valid email address.");
         return;
     }
@@ -59,6 +59,19 @@ const handleEditLead = lead => {
     setFormError("");
     setShowAddModal(true);
 };
+
+const handleDeleteLead = async (id) => {
+    const confirmed = window.confirm("Are you sure you want to delete this lead? This action cannot be undone.");
+    if (!confirmed) return;
+
+    try {
+        await deleteLead(id);
+        await fetchLeads();
+    } catch (err) {
+        setError(err.message || "Unable to delete lead.");
+    }
+};
+
 useEffect(() => {
   localStorage.setItem("leadflow-theme", theme);
 }, [theme]);
@@ -231,9 +244,14 @@ useEffect(() => {
                         <td>{lead.source}</td>
                         <td><span className={getStatusClass(lead.status)}>{lead.status}</span></td>
                         <td>
-                          <button className="edit-button" onClick={() => handleEditLead(lead)}>
-                            <Pencil size={15} /> Edit
-                          </button>
+                          <div className="action-buttons">
+                            <button className="edit-button" onClick={() => handleEditLead(lead)}>
+                              <Pencil size={15} /> Edit
+                            </button>
+                            <button className="delete-button" onClick={() => handleDeleteLead(lead._id)}>
+                              <Trash2 size={17} /> 
+                            </button>
+                          </div>
                         </td>
                       </tr>
                   ))

@@ -14,7 +14,7 @@ const leadSchema = new mongoose.Schema(
       required: [true, "Email is required"],
       lowercase: true,
       trim: true,
-      match: [/^\S+@\S+\.\S+$/, "Please enter a valid email"]
+      match: [/^[^\s@]+@[^\s@]+\.[a-zA-Z]{2,}$/, "Please enter a valid email address"]
     },
 
     phone: {

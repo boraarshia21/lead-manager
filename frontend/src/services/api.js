@@ -40,3 +40,12 @@ export const updateLead = async (id, leadData) => {
     if (!response.ok) throw new Error(data.message || "Failed to update lead");
     return data;
 };
+
+export const deleteLead = async (id) => {
+    const response = await fetch(`${API_URL}/leads/${id}`, {
+        method: "DELETE"
+    });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.message || "Failed to delete lead");
+    return data;
+};
