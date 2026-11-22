@@ -1,10 +1,11 @@
 
 const { test, expect } = require("@playwright/test");
+const { signUpNewUser } = require("./helpers");
 
 test("user can search for a lead by name", async ({ page }) => {
     const leadName = `Search Test ${Date.now()}`;
 
-    await page.goto("/");
+    await signUpNewUser(page);
     await page.getByRole("button", { name: /add new lead/i }).click();
 
     await page.locator('input[name="name"]').fill(leadName);
@@ -27,7 +28,7 @@ test("user can search for a lead by name", async ({ page }) => {
 });
 
 test("user cannot submit a lead with an invalid phone number", async ({ page }) => {
-    await page.goto("/");
+    await signUpNewUser(page);
     await page.getByRole("button", { name: /add new lead/i }).click();
 
     await page.locator('input[name="name"]').fill("Invalid Phone Test");

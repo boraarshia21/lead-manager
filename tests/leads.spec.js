@@ -1,5 +1,6 @@
 
 const { test, expect } = require("@playwright/test");
+const { signUpNewUser } = require("./helpers");
 
 test("user can add, edit and delete a lead", async ({ page }) => {
     const leadName = `Playwright Test ${Date.now()}`;
@@ -8,7 +9,7 @@ test("user can add, edit and delete a lead", async ({ page }) => {
     page.on("pageerror", error => console.log("PAGE ERROR:", error.message));
     page.on("requestfailed", request => console.log("REQUEST FAILED:", request.url(), request.failure()?.errorText));
 
-    await page.goto("/");
+    await signUpNewUser(page);
     await page.getByRole("button", { name: /add new lead/i }).click();
 
     await page.locator('input[name="name"]').fill(leadName);
