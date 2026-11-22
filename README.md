@@ -4,8 +4,8 @@ A small full-stack app for sales users to capture and track leads. Each user sig
 
 **Stack:** React 19 + Vite (frontend) · Node.js + Express 5 (API) · MongoDB Atlas + Mongoose (database) · JWT + bcrypt (auth) · Playwright (API and UI tests)
 
-**🔗 Live demo:** https://lead-manager-rho-rouge.vercel.app
-**⚙️ API:** https://leadflow-api-sc92.onrender.com
+- **🔗 Live demo:** https://lead-manager-rho-rouge.vercel.app
+- **⚙️ API:** https://leadflow-api-sc92.onrender.com
 
 > The API is on Render's free tier, so after a period of inactivity the first request can take ~30–50 seconds while the server wakes up.
 
